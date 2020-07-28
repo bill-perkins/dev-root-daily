@@ -15,10 +15,10 @@ if [ "$HOSTNAME" == "sasdevcontrollerrhelsr01.corp.local" ]; then
 fi
 
 # then, if we are one of the microservers, run the cleanwork process:
-echo ${HOSTNAME} | grep -q 'micro' 
+echo ${HOSTNAME} | grep -q 'microrhelsr01' 
 if [ $? -eq 0 ]; then
-#    /opt/sas/spre/home/SASFoundation/utilities/bin/cleanwork  -v /opt/sas/viya/config/var/tmp
     /root/bin/daily_cleanup.sh
+    rsync -a "/mnt/dropzone/HR/UnapprovedTimeSheets/" "/dmo1/prod/dropZone/UnapprovedTimeSheetNotifications"
 fi
 
 echo -n "$HOSTNAME: " >${TMPD}
