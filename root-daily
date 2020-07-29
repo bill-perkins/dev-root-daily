@@ -18,6 +18,10 @@ fi
 echo ${HOSTNAME} | grep -q 'microrhelsr01' 
 if [ $? -eq 0 ]; then
     /root/bin/daily_cleanup.sh
+fi
+
+# we only want to do this from micro1:
+if [ "$HOSTNAME" == "sasmicrorhelsr01.corp.local" ]; then
     rsync -a "/mnt/dropzone/HR/UnapprovedTimeSheets/" "/dmo1/prod/dropZone/UnapprovedTimeSheetNotifications"
 fi
 
