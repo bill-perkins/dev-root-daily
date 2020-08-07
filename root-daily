@@ -7,6 +7,10 @@ LOG="/home/viyadep/daily.log"
 TMPD="/tmp/daily.today"
 NOW="/home/viyadep/checkstatus.now"
 
+# this is used while dmtransformservices is flagged 'down' by all-services,
+# but nothing else says it is:
+SVCIGNORE='sas-viya-dmtransformservices-default'
+
 # first, clean space in /dmo1/prod/temp and /dmo1/dev/temp and /analytics1:
 if [ "$HOSTNAME" == "sasdevcontrollerrhelsr01.corp.local" ]; then
     /bin/find /dmo1/prod/temp -name ".nfs*" -mtime +1 -exec rm -f {} \;
@@ -25,6 +29,7 @@ if [ "$HOSTNAME" == "sasmicrorhelsr01.corp.local" ]; then
     rsync -a "/mnt/dropzone/HR/UnapprovedTimeSheets/" "/dmo1/prod/dropZone/UnapprovedTimeSheetNotifications"
 fi
 
+# gather system info:
 echo -n "$HOSTNAME: " >${TMPD}
 date    >>${TMPD}
 w       >>${TMPD}
@@ -32,6 +37,7 @@ echo    >>${TMPD}
 free -m >>${TMPD}
 echo    >>${TMPD}
 
+# disk info:
 df -h / /opt/sas /sastmp /sasdata /dmo1 /analytics1 >>${TMPD}
 echo    >>${TMPD}
 ifconfig ens192 >>${TMPD}
@@ -44,18 +50,20 @@ echo    >>${TMPD}
 #      echo >>${TMPD}
 #fi
 
+# network connectivity:
 /home/viyadep/bin/sysping >>${TMPD}
 echo    >>${TMPD}
 
-# --- send sas-viya-all-services status to checkstatus.now:
+# sas-viya-all-services status to checkstatus.now:
 service sas-viya-all-services status >${NOW}
 
 # --- see if anyone is down:
 echo -n "services check: " >>${TMPD}
-grep -q 'down' ${NOW}
+grep -q 'down' | grep -v ${SVCIGNORE} ${NOW}
 if [ $? -eq 0 ]; then
     echo "some services are DOWN:" >>${TMPD}
-    grep -i 'down' ${NOW} >>${TMPD}
+    grep -i 'down' ${NOW} | grep -v ${SVCIGNORE} >>${TMPD}
+    echo "    check /var/run/sas/sas-viya-<service>-default.pid"
 else
     echo "OK" >>${TMPD}
 fi
