@@ -1,0 +1,20 @@
+#!/bin/sh
+# setperms: script to run at midnight to set permissions for certain directories:
+
+chmod -R 777 /dmo1/dev/data_customization/code
+chmod -R 777 /dmo1/prod/data_customization/code
+chmod -R 777 /dmo1/macros
+chmod -R 777 /analytics1/dev/MonthlyProductionProcess/code
+chmod -R 777 /analytics1/prod/MonthlyProductionProcess/code
+chmod -R 777 /analytics1/dev/MonthlyProductionProcess/macros
+chmod -R 777 /analytics1/prod/MonthlyProductionProcess/macros
+
+#chmod -R 777 /analytics1/dev/monthlyCLTV/code
+#chmod -R 777 /analytics1/dev/monthlyCLTV/macros
+#chmod -R 777 /analytics1/prod/monthlyCLTV/code
+#chmod -R 777 /analytics1/prod/monthlyCLTV/macros
+
+chmod -R 777 /analytics1/dev/monthlyCLTV/*
+chmod -R 777 /analytics1/prod/monthlyCLTV/*
+
+# EOF:
