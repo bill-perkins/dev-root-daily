@@ -26,17 +26,13 @@ if [ $TESTING -eq 0 ]; then
         /bin/find /dmo1/dev/temp  -name ".nfs*" -mtime +1 -exec rm -f {} \;
         /bin/find /analytics1     -name ".nfs*" -mtime +1 -exec rm -f {} \;
     fi
-fi
 
-if [ $TESTING -eq 0 ]; then
-    # then, if we are one of the microservers, run the cleanwork process:
+    # then, if we are one of the dev or production microservers,
+    # run the cleanwork process:
     echo ${HOSTNAME} | grep -q 'microrhelsr01' 
     if [ $? -eq 0 ]; then
         /root/bin/daily_cleanup.sh
     fi
-fi
-
-if [ $TESTING -eq 0 ]; then
     # we only want to do this from micro1:
     if [ "$HOSTNAME" == "sasmicrorhelsr01.corp.local" ]; then
         rsync -a "/mnt/dropzone/HR/UnapprovedTimeSheets/" "/dmo1/prod/dropZone/UnapprovedTimeSheetNotifications"
@@ -96,9 +92,9 @@ if [ -d /opt/automate-agent ]; then
 fi
 echo >>${TMPD}
 
-echo    >>${TMPD}
+echo >>${TMPD}
 echo "-------------------------------------------------------------------------------------------" >>${TMPD}
-echo    >>${TMPD}
+echo >>${TMPD}
 
 if [ $TESTING -eq 0 ]; then
     # --- add new daily output to daily.log:
@@ -118,7 +114,6 @@ fi
 if [ $TESTING -eq 0 ]; then
     if [ -d /home/viyadep/incoming/work ]; then
         YESTERDAY=`date -d 'yesterday' '+%Y-%m-%d'`
-        LOGFILECOUNT=`ls /analytics1/logs | grep stillwell1-${YESTERDAY} | wc -l`
         FILES=`/usr/bin/find /analytics1/logs -name stillwell1-${YESTERDAY}*`
         OUT="/home/viyadep/incoming/work/stillwell.out"
         FAIL=0
@@ -133,6 +128,7 @@ if [ $TESTING -eq 0 ]; then
             fi
         done
 
+        LOGFILECOUNT=`ls /analytics1/logs | grep stillwell1-${YESTERDAY} | wc -l`
         if [ ${LOGFILECOUNT} -lt 2 ]; then
             echo "Stillwell1.bat ran ${LOGFILECOUNT} time(s) on ${YESTERDAY}:" >>${OUT}
             echo 'ls /analytics1/logs/stillwell1-${YESTERDAY}*:' >>${OUT}
