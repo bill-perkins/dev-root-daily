@@ -1,5 +1,8 @@
 #!/bin/sh
 # setperms: script to run at midnight to set permissions for certain directories:
+# this runs on sasmicrorhelsr01.corp.local,
+# add this to /etc/crontab:
+# 0 0 * * * root /root/bin/setperms
 
 chmod -R 777 /dmo1/dev/data_customization/code
 chmod -R 777 /dmo1/prod/data_customization/code
