@@ -37,7 +37,7 @@ for s in \
 # The files in /opt/sas/viya/config/var/log don't take an appreciable amount of space.
 # We should probably keep only 32 days worth of log files.
 #
-# Note that when piping the find command output through xarks with the 'ls -lhart' gives
+# Note that when piping the find command output through xargs with the 'ls -lhart' gives
 # a proper ls listing:
 #    ssh $s 'find /opt/sas/viya/config/var/log -name "*_*.log" -mtime +20 | xargs ls -lhart'
 #    echo
