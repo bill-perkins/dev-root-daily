@@ -1,0 +1,14 @@
+#!/bin/sh
+#
+# simple script to deploy the files here to where they are needed
+
+pushd ~ >/dev/null
+scpall bin/root-daily
+popd >/dev/null
+
+scp root-daily controller1:
+scp daily_cleanup.sh micro1:bin
+scp daily_cleanup.sh devmicro1:bin
+scp setperms micro1:bin
+
+# EOF:
