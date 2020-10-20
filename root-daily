@@ -6,11 +6,12 @@
 LOG="/home/viyadep/daily.log"
 TMPD="/tmp/daily.today"
 NOW="/home/viyadep/checkstatus.now"
+RSTILLWELL=0
 
 # set up so we don't necessarily send out email:
 # and do a bunch of other things:
 TESTING=0
-if [ $1 == '-t' ]; then
+if [ "$1" == '-t' ]; then
     TESTING=1
     TMPD='/dev/stdout'
 fi
@@ -112,7 +113,7 @@ if [ $TESTING -eq 0 ]; then
 fi
 
 # --- other things:
-if [ $TESTING -eq 0 ]; then
+if [ $RSTILLWELL -ne 0 ]; then
     if [ -d /home/viyadep/incoming/work ]; then
         YESTERDAY=`date -d 'yesterday' '+%Y-%m-%d'`
         FILES=`/usr/bin/find /analytics1/logs -name stillwell1-${YESTERDAY}*`
