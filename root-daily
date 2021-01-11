@@ -23,9 +23,9 @@ SVCIGNORE='sas-viya-dmtransformservices-default'
 if [ $TESTING -eq 0 ]; then
     # first, clean space in /dmo1/prod/temp and /dmo1/dev/temp and /analytics1:
     if [ "$HOSTNAME" == "sasdevcontrollerrhelsr01.corp.local" ]; then
-        /bin/find /dmo1/prod/temp -name ".nfs*" -mtime 1 -exec rm -f {} \;
-        /bin/find /dmo1/dev/temp  -name ".nfs*" -mtime 1 -exec rm -f {} \;
-        /bin/find /analytics1     -name ".nfs*" -mtime 1 -exec rm -f {} \;
+        /bin/find /dmo1/prod/temp -name ".nfs*" -mtime +0 -exec rm -f "{}" \;
+        /bin/find /dmo1/dev/temp  -name ".nfs*" -mtime +0 -exec rm -f "{}" \;
+        /bin/find /analytics1     -name ".nfs*" -mtime +0 -exec rm -f "{}" \;
     fi
 
     # then, if we are on the dev or prod micro1,
@@ -50,12 +50,15 @@ free -m >>${TMPD}
 echo    >>${TMPD}
 
 # disk info:
-df -h / /opt/sas /sastmp /sasdata /dmo1 /analytics1 >>${TMPD}
+DISKLIST="/ /opt/sas /sastmp /sasdata /dmo1 /analytics1 /shareprod"
+
+df -h ${DISKLIST}  >>${TMPD}
 echo    >>${TMPD}
 ifconfig ens192 >>${TMPD}
 echo    >>${TMPD}
 
 ## keep an eye on auditcli, if it's there:
+## (not currently needed)
 #if [ -d /opt/sas/viya/config/var/cache/auditcli ]; then
 #      echo "auditcli check:" >>${TMPD}
 #      ls -l /opt/sas/viya/config/var/cache/auditcli >>${TMPD}
