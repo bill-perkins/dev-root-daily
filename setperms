@@ -19,7 +19,9 @@ chmod -R 777 /analytics1/prod/sasdata/master
 #chmod -R 777 /analytics1/prod/monthlyCLTV/code
 #chmod -R 777 /analytics1/prod/monthlyCLTV/macros
 
-chmod -R 777 /analytics1/dev/monthlyCLTV
-chmod -R 777 /analytics1/prod/monthlyCLTV
+#chmod -R 777 /analytics1/dev/monthlyCLTV
+#chmod -R 777 /analytics1/prod/monthlyCLTV
+# --- takes about 10-12 seconds:
+chmod -R 777 /analytics1
 
 # EOF:
