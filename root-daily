@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/bash
 #
 # simple script to log disk and memory usage on the local system
 # as well as other things
@@ -30,8 +30,9 @@ if [ $TESTING -eq 0 ]; then
 
     # then, if we are on the dev or prod micro1,
     # run the cleanwork process:
-    echo ${HOSTNAME} | grep -q 'microrhelsr01' 
-    if [ $? -eq 0 ]; then
+    echo "$HOSTNAME" | grep -q 'microrhelsr01' 
+    if  [ "$HOSTNAME" == "sasmicrorhelsr01.corp.local" ] || \
+        [ "$HOSTNAME" == "sasdevmicrorhelsr01.corp.local" ]; then
         /root/bin/daily_cleanup.sh
     fi
 
@@ -42,68 +43,61 @@ if [ $TESTING -eq 0 ]; then
 fi
 
 # gather system info:
-echo -n "$HOSTNAME: " >${TMPD}
-date    >>${TMPD}
-w       >>${TMPD}
-echo    >>${TMPD}
-free -m >>${TMPD}
-echo    >>${TMPD}
+echo -n "$HOSTNAME: " >$TMPD
+date          >>$TMPD
+w; echo       >>$TMPD
+free -m; echo >>$TMPD
 
 # disk info:
 DISKLIST="/ /opt/sas /sastmp /sasdata /dmo1 /analytics1 /shareprod"
 
-df -h ${DISKLIST}  >>${TMPD}
-echo    >>${TMPD}
-ifconfig ens192 >>${TMPD}
-echo    >>${TMPD}
+df -h $DISKLIST; echo  >>$TMPD
+ifconfig ens192; echo >>$TMPD
 
 ## keep an eye on auditcli, if it's there:
 ## (not currently needed)
 #if [ -d /opt/sas/viya/config/var/cache/auditcli ]; then
-#      echo "auditcli check:" >>${TMPD}
-#      ls -l /opt/sas/viya/config/var/cache/auditcli >>${TMPD}
-#      echo >>${TMPD}
+#      echo "auditcli check:" >>$TMPD
+#      ls -l /opt/sas/viya/config/var/cache/auditcli >>$TMPD
+#      echo >>$TMPD
 #fi
 
 # network connectivity:
-/home/viyadep/bin/sysping >>${TMPD}
-echo >>${TMPD}
+/home/viyadep/bin/sysping; echo >>$TMPD
 
 # sas-viya-all-services status to checkstatus.now:
 service sas-viya-all-services status >${NOW}
 
 # --- see if anyone is down:
-echo -n "services check: " >>${TMPD}
-grep -v ${SVCIGNORE} ${NOW} | grep -q 'down'
+echo -n "services check: " >>$TMPD
+if grep -v ${SVCIGNORE} ${NOW} | grep -q 'down'; then
 
-if [ $? -eq 0 ]; then
-    echo "some services are DOWN:" >>${TMPD}
-    grep -i 'down' ${NOW} | grep -v ${SVCIGNORE} >>${TMPD}
+#if [ $? -eq 0 ]; then
+    echo "some services are DOWN:" >>$TMPD
+    grep -i 'down' ${NOW} | grep -v ${SVCIGNORE} >>$TMPD
     echo "    check /var/run/sas/sas-viya-<service>-default.pid"
 else
-    echo "OK" >>${TMPD}
+    echo "OK" >>$TMPD
 fi
 
-echo >>${TMPD}
+echo >>$TMPD
 
 # --- make sure the automate agent is running:
 if [ -d /opt/automate-agent ]; then
-    RES=`ps ax | grep "DagentLog=logs/agent.log" | wc -l`
+    RES=$(ps ax | grep -c "DagentLog=logs/agent.log")
     if [ "${RES}" == "2" ]; then
-        echo "automate agent is running" >>${TMPD}
+        echo "automate agent is running" >>$TMPD
     else
-        echo "automate agent is NOT running" >>${TMPD}
+        echo "* * * * automate agent is NOT running" >>$TMPD
     fi
 fi
-echo >>${TMPD}
+echo >>$TMPD
 
-echo >>${TMPD}
-echo "-------------------------------------------------------------------------------------------" >>${TMPD}
-echo >>${TMPD}
+echo; echo "-------------------------------------------------------------------------------------------"; echo >>$TMPD
 
 if [ $TESTING -eq 0 ]; then
     # --- add new daily output to daily.log:
-    cat ${TMPD} >>${LOG}
+    cat $TMPD >>$LOG
 fi
 
 # --- change ownership of the ${NOW} file:
@@ -111,41 +105,39 @@ chown viyadep.viyadep ${NOW}
 
 # --- send the new output to the main destination:
 if [ $TESTING -eq 0 ]; then
-    mail -s "daily report from $HOSTNAME" viyadep@sasdevcontrollerrhelsr01 <${TMPD}
-    rm -f ${TMPD}
+    mail -s "daily report from $HOSTNAME" viyadep@sasdevcontrollerrhelsr01 <$TMPD
+    rm -f $TMPD
 fi
 
 # --- other things:
+# (this is off for now)
 if [ $RSTILLWELL -ne 0 ]; then
     if [ -d /home/viyadep/incoming/work ]; then
-        YESTERDAY=`date -d 'yesterday' '+%Y-%m-%d'`
-        FILES=`/usr/bin/find /analytics1/logs -name stillwell1-${YESTERDAY}*`
+        YESTERDAY=$(date -d 'yesterday' '+%Y-%m-%d')
+        FILES=$(/usr/bin/find /analytics1/logs -name "stillwell1-${YESTERDAY}*")
         OUT="/home/viyadep/incoming/work/stillwell.out"
         FAIL=0
 
         for f in ${FILES}; do
-            grep -q 'Exit code: 0' ${f}
-            if [ $? -ne 0 ]; then
+            if grep -q 'Exit code: 0' "$f"; then
                 FAIL=1
-                echo "the twice-daily Stillwell1.bat file failed on SASOA.corp.local on ${YESTERDAY}:" >>${OUT}
-                echo "${f} failed" >>${OUT}
-                echo >>${OUT}
+                echo "the twice-daily Stillwell1.bat file failed on SASOA.corp.local on ${YESTERDAY}:" >>$OUT
+                echo "${f} failed"; echo >>$OUT
             fi
         done
 
-        LOGFILECOUNT=`ls /analytics1/logs | grep stillwell1-${YESTERDAY} | wc -l`
-        if [ ${LOGFILECOUNT} -lt 2 ]; then
-            echo "Stillwell1.bat ran ${LOGFILECOUNT} time(s) on ${YESTERDAY}:" >>${OUT}
-            echo 'ls /analytics1/logs/stillwell1-${YESTERDAY}*:' >>${OUT}
-            ls /analytics1/logs/stillwell1-${YESTERDAY}* >>${OUT}
-            echo >>${OUT}
+        LOGFILECOUNT=$(ls /analytics1/logs/stillwell1-"$YESTERDAY" | wc -l)
+        if [ $LOGFILECOUNT -lt 2 ]; then
+            echo "Stillwell1.bat ran $LOGFILECOUNT time(s) on $YESTERDAY" >>$OUT
+            echo 'ls /analytics1/logs/stillwell1-${YESTERDAY}*:' >>$OUT
+            ls /analytics1/logs/stillwell1-"${YESTERDAY}"*; echo >>$OUT
         elif [ ${FAIL} -eq 0 ]; then
-            echo "Stillwell1.bat ran successfully on ${YESTERDAY}" >>${OUT}
+            echo "Stillwell1.bat ran successfully on ${YESTERDAY}" >>$OUT
         else
-            echo "Stillwell1.bat failure ${YESTERDAY}" >>${OUT}
+            echo "Stillwell1.bat failure ${YESTERDAY}" >>$OUT
         fi
 
-        chown viyadep.viyadep ${OUT}
+        chown viyadep.viyadep $OUT
     fi
 fi
 
