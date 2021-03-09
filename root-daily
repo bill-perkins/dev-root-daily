@@ -13,7 +13,7 @@ RSTILLWELL=0
 TESTING=0
 if [ "$1" == '-t' ]; then
     TESTING=1
-    TMPD='/dev/stdout'
+#    TMPD='/dev/stdout'
 fi
 
 # this is used while dmtransformservices is flagged 'down' by all-services,
@@ -44,15 +44,19 @@ fi
 
 # gather system info:
 echo -n "$HOSTNAME: " >$TMPD
-date          >>$TMPD
-w; echo       >>$TMPD
-free -m; echo >>$TMPD
+date                 >>$TMPD
+w                    >>$TMPD
+echo                 >>$TMPD
+free -m              >>$TMPD
+echo                 >>$TMPD
 
 # disk info:
 DISKLIST="/ /opt/sas /sastmp /sasdata /dmo1 /analytics1 /shareprod"
 
-df -h $DISKLIST; echo  >>$TMPD
-ifconfig ens192; echo >>$TMPD
+df -h $DISKLIST >>$TMPD
+echo            >>$TMPD
+ifconfig ens192 >>$TMPD
+echo            >>$TMPD
 
 ## keep an eye on auditcli, if it's there:
 ## (not currently needed)
@@ -63,7 +67,8 @@ ifconfig ens192; echo >>$TMPD
 #fi
 
 # network connectivity:
-/home/viyadep/bin/sysping; echo >>$TMPD
+/home/viyadep/bin/sysping >>$TMPD
+echo >>$TMPD
 
 # sas-viya-all-services status to checkstatus.now:
 service sas-viya-all-services status >${NOW}
@@ -93,7 +98,9 @@ if [ -d /opt/automate-agent ]; then
 fi
 echo >>$TMPD
 
-echo; echo "-------------------------------------------------------------------------------------------"; echo >>$TMPD
+echo >>$TMPD
+echo "-------------------------------------------------------------------------------------------" >>$TMPD
+echo >>$TMPD
 
 if [ $TESTING -eq 0 ]; then
     # --- add new daily output to daily.log:
@@ -122,7 +129,8 @@ if [ $RSTILLWELL -ne 0 ]; then
             if grep -q 'Exit code: 0' "$f"; then
                 FAIL=1
                 echo "the twice-daily Stillwell1.bat file failed on SASOA.corp.local on ${YESTERDAY}:" >>$OUT
-                echo "${f} failed"; echo >>$OUT
+                echo "${f} failed" >>$OUT
+                echo >>$OUT
             fi
         done
 
